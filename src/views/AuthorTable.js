@@ -32,14 +32,17 @@ const StyledGridOverlay = styled('div')(({ theme }) => ({
 }));
 
 
-const AuthorTable = () => {
+const AuthorTable = (props) => {
+
+  const rows = props.authorList.map(el => {return { id: el._id, name: el.firstName, lastName: el.lastName,
+    language: el.language}})
+
   const [loading, setLoading]= useState(false)
   const [totalRows, setTotalRows] = useState(3);
   const [pageSize, setPageSize] = useState(5);
   const [page, setPage] = useState(1);
-  const [rows, setRows]=useState([])
 
-  useEffect(()=>{  
+  /*useEffect(()=>{  
     setLoading(true);
     setRows([{"id":1,"name":"Indicio 1"},
     {"id":2,"name":"Indicio 2"},
@@ -49,7 +52,7 @@ const AuthorTable = () => {
     {"id":6,"name":"Indicio 6"},
     {"id":7,"name":"Indicio 7"}])
     setLoading(false);
-  },[[page, pageSize]]);
+  },[[page, pageSize]]);*/
 
 
 
@@ -112,7 +115,7 @@ const AuthorTable = () => {
   
   const columns = [
     { field: 'name', headerName: 'Name', flex:1.25 },
-    { field: 'lastname', headerName: 'Last Name(s)', flex:1.25 },
+    { field: 'lastName', headerName: 'Last Name(s)', flex:1.25 },
     { field: 'language', headerName: 'Native Language', flex:1.25 },
     { field: 'id', headerName: 'ID', width: 70 },
     {field:'actions',headerName:'Actions',renderCell:renderAccionesButton,flex:0.50}

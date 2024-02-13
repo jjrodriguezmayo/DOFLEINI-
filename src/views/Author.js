@@ -7,6 +7,8 @@ import {
 import Tooltip from '@mui/material/Tooltip';
 import AddIcon from '@mui/icons-material/Add';
 import AuthorTable from "./AuthorTable";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
 const CardRoot = styled(Card)(() => ({
     height: '100%',
@@ -22,6 +24,25 @@ const CardRoot = styled(Card)(() => ({
     },
   }));
   const Author = () => {
+    let [authorList, setAuthorList] = useState([]);
+    let [total, setTotal] = useState();
+    let [page, setPage] = useState('');
+    let [limit, setLimit] = useState('');
+    let [search, setSearch] = useState('');
+    
+
+    function loadData(page,limit,search){
+      console.log(search)
+   
+      axios.get('http://localhost:5000/author/list?search=$(search)'+search+'&page='+page+'&limit='+limit).then((res) =>{
+        setAuthorList(res.data.data);
+        setTotal(res.data.total)
+      })
+    }
+  
+      useEffect(()=>{
+        loadData(page,limit,search);
+      },[]);
 
     return (
       <Container >
@@ -34,7 +55,7 @@ const CardRoot = styled(Card)(() => ({
             </Tooltip>
         </Box>
         <Container sx={{display: 'flex',flexDirection: 'row',justifyContent: 'flex-end', margin: 0, marginBottom: 0}}>
-        <AuthorTable></AuthorTable>
+        <AuthorTable authorList={authorList} loadData={loadData} />
         </Container>
       </CardRoot>
       </Container>
