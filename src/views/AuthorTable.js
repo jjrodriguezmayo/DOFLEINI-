@@ -38,28 +38,21 @@ const AuthorTable = (props) => {
     language: el.language}})
 
   const [loading, setLoading]= useState(false)
-  const [totalRows, setTotalRows] = useState(3);
+  const [totalRows, setTotalRows] = useState(6);
   const [pageSize, setPageSize] = useState(5);
   const [page, setPage] = useState(1);
-
-  /*useEffect(()=>{  
-    setLoading(true);
-    setRows([{"id":1,"name":"Indicio 1"},
-    {"id":2,"name":"Indicio 2"},
-    {"id":3,"name":"Indicio 3"},
-    {"id":4,"name":"Indicio 4"},
-    {"id":5,"name":"Indicio 5"},
-    {"id":6,"name":"Indicio 6"},
-    {"id":7,"name":"Indicio 7"}])
-    setLoading(false);
-  },[[page, pageSize]]);*/
-
-
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: 5,
+  });
+  const [rowCountState, setRowCountState] = React.useState(5);
 
   const renderAccionesButton=(row)=>{
     return(
       <strong>
-         < Buttons id={row.id}></Buttons>
+         < Buttons loadData={props.loadData} id={row.id} firstName={row.row.name}
+          lastName={row.row.lastName} language={row.row.language}>
+         </Buttons>
       </strong>
     )
   }
@@ -130,6 +123,14 @@ const AuthorTable = (props) => {
     setPageSize(newPageSize);
   };
 
+  /*
+  
+      pageSizeOptions={[5]}
+      rowCount={totalRows}
+      paginationModel={paginationModel}
+      paginationMode="server"
+      onPaginationModelChange={setPaginationModel}
+  */
 
   return (
     <div style={{ height: 'auto', width: '100%', overflow:'auto' }}>
@@ -142,7 +143,7 @@ const AuthorTable = (props) => {
       disableDensitySelector
       disableColumnMenu
       pageSize={pageSize}
-      rowsPerPageOptions={[10]}
+      rowsPerPageOptions={[5]}
       columnVisibilityModel={{id:false}}
       hideFooterSelectedRowCount={true}
       components={{ Toolbar: GridToolbar , NoRowsOverlay:CustomNoRowsOverlay}}
@@ -155,12 +156,6 @@ const AuthorTable = (props) => {
           
         },
       }}
-      pagination
-      page={page}
-      onPageChange={handlePageChange}
-      pageSizeOptions={[10, 20, 50]}
-      onPageSizeChange={(newPageSize) => handlePageSizeChange(newPageSize)}
-      rowCount={totalRows}
       sx={{border:0}}
     />
   </div>

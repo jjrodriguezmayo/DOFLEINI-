@@ -20,6 +20,7 @@ import TextField from '@mui/material/TextField';
 import axios from 'axios';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { LoadingButton } from '@mui/lab';
 
 
 const DialogTitleRoot = styled(MuiDialogTitle)(({ theme }) => ({
@@ -57,54 +58,59 @@ const DialogTitleRoot = styled(MuiDialogTitle)(({ theme }) => ({
   
 
 const Buttons=(props)=> {
-    //console.log(props)
 
-  const navigate = useNavigate();
+  let [loading, setLoading] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-
   const handleClickOpenEdit = () => setOpenEdit(true);
-
   const handleCloseEdit = () => setOpenEdit(false);
-
   const [openDelete, setOpenDelete] = useState(false);
   const handleClickOpenDelete = () => setOpenDelete(true);
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+    setError('');}
+  const [error, setError] = useState('');
 
-  const handleCloseDelete = () => setOpenDelete(false);
   const handleDelete = () =>{
-    // ejemplo de peticion axios.delete(Services.sources.sourcesService+'/'+props.id).then((res) 
+    try{
+    axios.delete('http://localhost:5000/author/delete/'+props.id).then((res) =>{
     handleCloseDelete()
-    // ejemplo de recargar los datos props.reloadData()
+    props.loadData(0,'','')
 
+    })}
+    catch (e) {
+      setError(e.message);
+    }
   }
 
   const handleFormSubmit = async (values) => {
-   
-    ///Ejemplo de submit
-    // setLoading(true);
-   /* const formData = {name:values.nombre,url:values.url, description: values.description}
+    setLoading(true);
+    const formData = Object.keys(values).reduce((acc, key) => {
+      if (values[key] !== initialValues[key]) {
+        acc[key] = values[key];
+      }
+      return acc;
+    }, {});
     try{
-      await axios.put(Services.sources.sourcesService+'/'+props.id, formData)
-      handleCloseEditar();
-      props.reloadData()
+      await axios.patch('http://localhost:5000/author/update/'+props.id, formData)
+      handleCloseEdit();
+      props.loadData(0,'','');
       setLoading(false);}
       
       catch (e) {
         setLoading(false);
-      }*/
+      }
   };
-  
    
   const initialValues = {
-    nombre: props.name,
-    description: props.description,
-    url:props.url,
+    firstName: props.firstName,
+    lastName: props.lastName,
+    language:props.language,
     //remember: true,
   };
   const validationSchema = Yup.object().shape({
-    url: Yup.string().url('Ingrese una URL válida').required('Escriba la URL'),
-    nombre: Yup.string().required('Escriba el nombre'),
-    description: Yup.string()
-    .min(10, '¡La descripción debe tener mas de 255 caracteres!')
+    firstName: Yup.string().required('First Name required'),
+    lastName: Yup.string().required('Last Name(s) required'),
+    language: Yup.string().required('Native Language required')
   });
   
 
@@ -125,7 +131,7 @@ return (
 
   <Dialog  aria-labelledby="customized-dialog-title" open={openEdit}>
         <MuiDialogTitle id="customized-dialog-title" onClose={handleCloseEdit}  sx={{display:'flex',justifyContent: 'space-between',alignItems: 'center'}}>
-        Edit Sample
+        Edit Author
         <IconButton aria-label="Close" className="closeButton" onClick={handleCloseEdit}>
           <CloseIcon />
         </IconButton>
@@ -137,60 +143,62 @@ return (
                 initialValues={initialValues}
                 validationSchema={validationSchema}
               >
-                {({ values, errors, touched, handleChange, handleBlur, handleSubmit }) => (
+                {({ values, errors, touched, handleChange, handleBlur, handleSubmit,dirty, isSubmitting  }) => (
                   <form onSubmit={handleSubmit}>
                     <TextField
                       fullWidth
                       type="string"
-                      name="nombre"
-                      label="Nombre"
+                      name="firstName"
+                      label="First Name"
                       variant="outlined"
                       onBlur={handleBlur}
-                      value={values.nombre}
+                      value={values.firstName}
                       onChange={handleChange}
-                      helperText={touched.nombre && errors.nombre}
-                      error={Boolean(errors.nombre && touched.nombre)}
+                      helperText={touched.firstName && errors.firstName}
+                      error={Boolean(errors.firstName && touched.firstName)}
                       sx={{ mb: 3 }}
                     />
                     <TextField
                       fullWidth
-                      name="description"
+                      name="lastName"
                       type="string"
-                      label="Descripción"
+                      label="Last Name"
                       variant="outlined"
                       onBlur={handleBlur}
-                      value={values.description}
+                      value={values.lastName}
                       onChange={handleChange}
-                      helperText={touched.description && errors.description}
-                      error={Boolean(errors.description && touched.description)}
+                      helperText={touched.lastName && errors.lastName}
+                      error={Boolean(errors.lastName && touched.lastName)}
                       sx={{ mb: 3 }}
                     />
 
                     <TextField
                       fullWidth
-                      name="url"
+                      name="language"
                       type="string"
-                      label="URL"
+                      label="Language"
                       variant="outlined"
                       onBlur={handleBlur}
-                      value={values.url}
+                      value={values.language}
                       onChange={handleChange}
-                      helperText={touched.url && errors.url}
-                      error={Boolean(errors.url && touched.url)}
+                      helperText={touched.language && errors.language}
+                      error={Boolean(errors.language && touched.language)}
                       sx={{ mb: 3 }}
                     />
                      <MuiDialogActions sx={{padding:0}}>
                     <Button  color="primary"  variant='contained'onClick={handleCloseEdit}>
                       Cancel
                     </Button>
-                    <Button
+                    <LoadingButton
                       type="submit"
                       color="primary"
+                      loading={loading || isSubmitting}
                       variant="contained"
+                      disabled={!dirty || isSubmitting}
                       sx={{ my: 2 }}
                     >
                       Save
-                    </Button>
+                    </LoadingButton>
                     </MuiDialogActions>
                   </form>
                 )}
@@ -202,11 +210,11 @@ return (
 
       <Dialog onClose={handleCloseDelete} aria-labelledby="customized-dialog-title" open={openDelete}>
     <DialogTitle id="customized-dialog-title" onClose={handleCloseDelete}>
-    Delete sample
+    Delete Author
     </DialogTitle>
 
     <DialogContent dividers>
-    Are you sure you want to delete the contents of "Sample"?
+    {error ? error : `Are you sure you want to delete the author ${props.firstName} ${props.lastName}?`}
     </DialogContent>
 
     <DialogActions>
